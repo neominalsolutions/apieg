@@ -1,0 +1,35 @@
+http:
+  port: 8080
+admin:
+  port: 9876
+  host: localhost
+apiEndpoints: # // dış network için virtual path tanımı
+  todosApi:
+    host: localhost
+    paths: '/api/todos*' # * ile todos altındaki tüm pathler mapping yapıldı.
+serviceEndpoints: # // iç network servislerin tanımı
+  todosService:
+    url: 'https://jsonplaceholder.typicode.com/todos' #localhost:5001 (Express API)
+policies:
+  - basic-auth #username password authentication
+  - cors # cors ayarlarımız
+  - expression
+  - key-auth # api key haberleşmesi apiKey 324324432
+  - log #loglama
+  - oauth2  # openid ouath2.0 gibi identity server yapıları destekliyor. sso
+  - proxy # reredirection için reverse proxy mantığı yapıyor
+  - rate-limit # isteklerin limitlenmesi
+pipelines:
+  default:
+    apiEndpoints:
+      - todosApi
+    policies:
+    # Uncomment `key-auth:` when instructed to in the Getting Started guide.
+      - key-auth:
+          - action:
+              apiKeyHeader: myHeader # custom header name
+              disableHeadersScheme: true # will accept "key:secret" format instead of "scheme key:secret"
+      - proxy: # default poliçe olarak todosApi istek atılırsa serviceendpoint olarak  todosService yönlensin
+          - action:
+              serviceEndpoint: todosService 
+              changeOrigin: true 
